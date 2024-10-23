@@ -1,0 +1,13 @@
+name: advent_of_code
+version: 0.1.0
+
+authors:
+  - Greg Woods
+
+targets:
+  advent_of_code:
+    main: src/advent_of_code.cr
+
+crystal: '>= 1.14.0'
+
+license: MIT
