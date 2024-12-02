@@ -3,3 +3,7 @@
 /bin/
 /.shards/
 *.dwarf
+.session
+inputs/*
+advent_of_code
+inputs/*

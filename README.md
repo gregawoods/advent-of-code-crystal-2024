@@ -1,27 +1,37 @@
-# advent_of_code
+# Advent of Code
 
-TODO: Write a description here
+Crystal solutions to [Advent of Code](https://adventofcode.com/).
 
 ## Installation
 
-TODO: Write installation instructions here
+First [install crystal](https://crystal-lang.org/install/).
 
 ## Usage
 
-TODO: Write usage instructions here
+Create a file at `.session` and enter your cookie value.
 
-## Development
+Download input for a day:
 
-TODO: Write development instructions here
+```
+crystal run ./src/advent_of_code.cr -- -d 3
+```
 
-## Contributing
+Solve a day:
 
-1. Fork it (<https://github.com/your-github-user/advent_of_code/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+```
+crystal run ./src/advent_of_code.cr -- -s 1
+```
 
-## Contributors
+## Testing
 
-- [your-name-here](https://github.com/your-github-user) - creator and maintainer
+Run all tests:
+
+```
+crystal spec
+```
+
+Run a specific test:
+
+```
+crystal spec spec/01_spec.cr:8
+```
