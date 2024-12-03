@@ -6,13 +6,13 @@ describe Day02 do
 
   describe "part1" do
     it "works" do
-      day.part1(input).should eq("Test")
+      day.part1(input).should eq(2)
     end
   end
 
   describe "part2" do
     it "works" do
-      day.part2(input).should eq("Test")
+      day.part2(input).should eq(4)
     end
   end
 
