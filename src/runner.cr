@@ -6,7 +6,7 @@ class Runner
   include Strings
 
   DAYS = [
-    Day01, Day02
+    Day01, Day02, Day03
   ]
 
   def call(day : String)
@@ -18,5 +18,11 @@ class Runner
 
     puts day.part1(input)
     puts day.part2(input)
+  end
+
+  def solve_all
+    DAYS.size.times do |d|
+      call((d + 1).to_s)
+    end
   end
 end

@@ -20,5 +20,11 @@ OptionParser.parse do |parser|
     puts "Solving day #{day}"
     runner = Runner.new
     runner.call(day)
+    exit
+  end
+
+  parser.on "solve", "Solve all days" do
+    runner = Runner.new
+    runner.solve_all
   end
 end
