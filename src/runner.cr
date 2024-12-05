@@ -6,7 +6,7 @@ class Runner
   include Strings
 
   DAYS = [
-    Day01, Day02, Day03, Day04
+    Day01, Day02, Day03, Day04, Day05
   ]
 
   def call(day : String)
