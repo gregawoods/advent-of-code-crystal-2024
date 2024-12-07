@@ -26,5 +26,11 @@ OptionParser.parse do |parser|
   parser.on "solve", "Solve all days" do
     runner = Runner.new
     runner.solve_all
+    exit
+  end
+
+  parser.on("-h", "--help", "Show this help") do
+    puts parser
+    exit
   end
 end
