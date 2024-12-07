@@ -3,7 +3,7 @@ class Day02 < Day
     result = 0
 
     input.lines.each do |line|
-      levels = line.split(" ").map { |it| it.to_i }
+      levels = line.split(" ").map(&.to_i)
 
       result += 1 if line_safe?(levels)
     end
@@ -41,7 +41,7 @@ class Day02 < Day
     result = 0
 
     input.lines.each_with_index do |line, i|
-      levels = line.split(" ").map { |it| it.to_i }
+      levels = line.split(" ").map(&.to_i)
 
       if line_safe?(levels)
         result += 1

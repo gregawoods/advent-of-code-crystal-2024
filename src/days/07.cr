@@ -9,7 +9,7 @@ class Day07 < Day
   private def parse_input(input : Input) : Array(Equation)
     input.lines.map do |line|
       start, rest = line.split(":")
-      nums = rest.split(" ").reject { |n| n == "" }.map { |n| Int64.new(n) }
+      nums = rest.split(" ").reject(&.blank?).map(&.to_i64)
       Equation.new(Int64.new(start), nums)
     end
   end
@@ -40,7 +40,7 @@ class Day07 < Day
   def part1(input)
     parse_input(input)
       .select { |eq| equation_solvable?(eq) }
-      .map { |eq| eq.value }.sum
+      .map(&.value).sum
   end
 
   private def equation_solvable_concat?(eq : Equation)
@@ -74,6 +74,6 @@ class Day07 < Day
   def part2(input)
     parse_input(input)
       .select { |eq| equation_solvable_concat?(eq) }
-      .map { |eq| eq.value }.sum
+      .map(&.value).sum
   end
 end

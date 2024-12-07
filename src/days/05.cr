@@ -21,7 +21,7 @@ class Day05 < Day
         x, y = line.split("|")
         rules << Rule.new(x.to_i, y.to_i)
       else
-        lists << line.split(",").map { |s| s.to_i }
+        lists << line.split(",").map(&.to_i)
       end
     end
 
