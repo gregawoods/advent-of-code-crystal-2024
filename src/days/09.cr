@@ -1,32 +1,20 @@
 class Day09 < Day
 
   private def parse_input(input : Input) : Array(Char | Int64)
-    index = -1
-
-    data = input.lines.first.chars.reduce([] of Char | Int64) do |data, char|
-      index += 1
-      intval = char.to_i
-
+    input.lines.first.chars.each_with_index.reduce([] of Char | Int64) do |data, (char, index)|
       if index.even?
-        data += Array.new(intval, (index / 2).to_i64)
+        data += Array.new(char.to_i, (index / 2).to_i64)
       else
-        data += Array.new(intval, '.')
+        data += Array.new(char.to_i, '.')
       end
     end
-
-    data
   end
 
   def checksum(data : Array(Char | Int64)) : Int64
-    result = 0_i64
-
-    data.each_with_index do |value, index|
-      if value.is_a? Int64
-        result += value * index
-      end
+    data.each_with_index.reduce(0_i64) do |sum, (value, index)|
+      sum += value * index if value.is_a? Int64
+      sum
     end
-
-    result
   end
 
   def part1(input)
