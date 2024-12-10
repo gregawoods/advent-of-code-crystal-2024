@@ -10,7 +10,7 @@ class Day09 < Day
     end
   end
 
-  def checksum(data : Array(Char | Int64)) : Int64
+  private def checksum(data : Array(Char | Int64)) : Int64
     data.each_with_index.reduce(0_i64) do |sum, (value, index)|
       sum += value * index if value.is_a? Int64
       sum
