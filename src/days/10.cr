@@ -25,51 +25,8 @@ class Day10 < Day
     {grid, trailheads}
   end
 
-  def part1(input)
-    grid, trailheads = parse_input(input)
-
-    trailheads.reduce(0) do |sum, trailhead|
-      reached = Set(Point).new
-      positions = [trailhead]
-
-      loop do
-        new_positions = [] of Point
-
-        positions.each do |pos|
-          calculate_moves(grid, pos).each do |move|
-            if grid[move.x][move.y] == 9
-              reached << move
-            else
-              new_positions << move
-            end
-          end
-        end
-
-        break if new_positions.empty?
-        positions = new_positions.uniq
-      end
-
-      sum + reached.size
-    end
-  end
-
-  private def calculate_moves(grid, point : Point) : Array(Point)
-    [
-      Point.new(point.x - 1, point.y),
-      Point.new(point.x + 1, point.y),
-      Point.new(point.x, point.y - 1),
-      Point.new(point.x, point.y + 1)
-    ].select do |p|
-      (0...grid.size).includes?(p.x) &&
-        (0...grid.first.size).includes?(p.y) &&
-        grid[p.x][p.y] - grid[point.x][point.y] == 1
-    end
-  end
-
-  def part2(input)
-    grid, trailheads = parse_input(input)
-
-    trailheads.reduce(0) do |sum, trailhead|
+  private def calculate_paths(grid, trailheads) : Array(Set(Array(Point)))
+    trailheads.map do |trailhead|
       reached = Set(Array(Point)).new
       paths = [[trailhead]] of Array(Point)
 
@@ -93,8 +50,34 @@ class Day10 < Day
         paths = new_paths
       end
 
-      sum + reached.size
+      reached
     end
   end
 
+  private def calculate_moves(grid, point : Point) : Array(Point)
+    [
+      Point.new(point.x - 1, point.y),
+      Point.new(point.x + 1, point.y),
+      Point.new(point.x, point.y - 1),
+      Point.new(point.x, point.y + 1)
+    ].select do |p|
+      (0...grid.size).includes?(p.x) &&
+        (0...grid.first.size).includes?(p.y) &&
+        grid[p.x][p.y] - grid[point.x][point.y] == 1
+    end
+  end
+
+  def part1(input)
+    grid, trailheads = parse_input(input)
+
+    calculate_paths(grid, trailheads).map do |paths|
+      paths.map(&.last).uniq.size
+    end.sum
+  end
+
+  def part2(input)
+    grid, trailheads = parse_input(input)
+
+    calculate_paths(grid, trailheads).reduce(0) { |sum, paths| sum + paths.size }
+  end
 end
