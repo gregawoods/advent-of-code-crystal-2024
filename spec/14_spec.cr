@@ -10,10 +10,10 @@ describe Day14 do
     end
   end
 
-  describe "part2" do
-    it "works" do
-      day.part2(input).should eq(0)
-    end
-  end
-
+  # Can't really unit test this one
+  # describe "part2" do
+  #   it "works" do
+  #     day.part2(input).should eq(0)
+  #   end
+  # end
 end

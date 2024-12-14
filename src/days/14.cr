@@ -72,6 +72,39 @@ class Day14 < Day
   end
 
   def part2(input)
-    0
+    robots = manufacture_robots(input)
+    variances = Hash(Int32, Int32).new
+
+    10_000.times do |i|
+      robots.each { |bot| move(bot) }
+
+      x_variance = calculate_variance(robots.map(&.x))
+      y_variance = calculate_variance(robots.map(&.y))
+      variances[x_variance + y_variance] = i
+
+      if ENV.has_key?("DEBUG_DAY_14") && (x_variance + y_variance) < 800
+        print_robots(robots)
+      end
+    end
+
+    # Determine the overall variance in points for each
+    # step, then find the step with the lowest variance.
+    # This iteration is *probably* the tree.
+    #
+    variances[variances.keys.min] + 1
+  end
+
+  private def print_robots(bots)
+    (0...@height).each do |y|
+      puts (0...@width).map do |x|
+        any = bots.any? { |b| b.x == x && b.y == y }
+        any ? "#" : " "
+      end.join
+    end
+  end
+
+  private def calculate_variance(ints : Array(Int32))
+    mean = ints.sum / ints.size
+    (ints.sum { |i| (mean - i) ** 2 } / ints.size).to_i
   end
 end
