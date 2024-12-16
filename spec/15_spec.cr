@@ -17,8 +17,14 @@ describe Day15 do
   end
 
   describe "part2" do
+    it "works with a smaller example" do
+      day.part2(
+        Input.from_example("15_b.txt")
+      ).should eq(618)
+    end
+
     it "works" do
-      day.part2(input).should eq(0)
+      day.part2(input).should eq(9021)
     end
   end
 
