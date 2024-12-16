@@ -31,19 +31,25 @@ class Day16 < Day
       end
     end
 
-    # puts "Staring at #{start_x}, #{start_y}"
-    # puts "Destination #{dest_x}, #{dest_y}"
-    # pp walls
-
     queue = Priority::Queue(
       Array(Tuple(Int32, Int32, Char))
     ).new
     queue.push 0, [{start_x, start_y, '>'}]
 
+    visited = Set(Tuple(Int32, Int32, Char)).new
+
     i = 0
 
     loop do
       item = queue.shift
+
+      if visited.includes?(item.value.last)
+        next
+      else
+        # puts "We have visited this already, skip"
+        visited << item.value.last
+      end
+
       path = item.value
       x, y, dir = path.last
 
