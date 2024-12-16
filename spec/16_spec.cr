@@ -8,6 +8,12 @@ describe Day16 do
     it "works" do
       day.part1(input).should eq(7036)
     end
+
+    it "works with larger sample" do
+      day.part1(
+        input = Input.from_example("16_b.txt")
+      ).should eq(11048)
+    end
   end
 
   describe "part2" do

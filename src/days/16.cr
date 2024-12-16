@@ -40,18 +40,19 @@ class Day16 < Day
     ).new
     queue.push 0, [{start_x, start_y, '>'}]
 
-    # i = 0
+    i = 0
 
     loop do
-      # i += 1
-      # if i > 100_000
-      #   puts "Too many tries"
-      #   exit
-      # end
-
       item = queue.shift
       path = item.value
       x, y, dir = path.last
+
+      i += 1
+      # if item.priority > 11048 || i > 200_000
+      #   puts "Too many tries"
+      #   pp item
+      #   exit
+      # end
 
       # puts "At #{x} #{y} facing #{dir}, priority #{item.priority}"
 
@@ -61,16 +62,11 @@ class Day16 < Day
 
       # check moving straight
       mx, my = MOVES[dir]
-      if !walls[y + my][x + mx] && !path.includes?({x + mx, y + my, dir})
+      if !walls[y + my][x + mx] && !path.any? { |px, py, _d| px == x + mx && py == y + my}
         path = path.clone
         path << {x + mx, y + my, dir}
         queue.push item.priority + 1, path
       end
-
-      # turn left and right
-      # turns = MOVES.keys + MOVES.keys
-      # left = turns[turns.index(dir).as(Int32) - 1]
-      # right = turns[turns.index(dir).as(Int32) + 1]
 
       if dir == '^'
         left = '<'
@@ -86,13 +82,17 @@ class Day16 < Day
         right = '^'
       end
 
-      lpath = path.clone
-      lpath << {x, y, left}
-      queue.push(item.priority + 1000, lpath)
+      if !path.includes?({x, y, left})
+        lpath = path.clone
+        lpath << {x, y, left}
+        queue.push(item.priority + 1000, lpath)
+      end
 
-      rpath = path.clone
-      rpath << {x, y, right}
-      queue.push(item.priority + 1000, rpath)
+      if !path.includes?({x, y, right})
+        rpath = path.clone
+        rpath << {x, y, right}
+        queue.push(item.priority + 1000, rpath)
+      end
     end
 
     0
