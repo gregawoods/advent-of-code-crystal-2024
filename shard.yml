@@ -4,6 +4,11 @@ version: 0.1.0
 authors:
   - Greg Woods
 
+dependencies:
+  priority-queue:
+    github: spider-gazelle/priority-queue
+    branch: master
+
 targets:
   advent_of_code:
     main: src/advent_of_code.cr

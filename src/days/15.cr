@@ -133,9 +133,9 @@ class Day15 < Day
 
     input.lines.each_with_index do |line, y|
       line = line.gsub("#", "##")
-      line = line.gsub(".", "..")
-      line = line.gsub("O", "[]")
-      line = line.gsub("@", "@.")
+        .gsub(".", "..")
+        .gsub("O", "[]")
+        .gsub("@", "@.")
 
       if line == ""
         parsing_steps = true
