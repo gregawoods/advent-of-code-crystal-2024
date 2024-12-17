@@ -9,7 +9,7 @@ class Day16 < Day
     '^' => [0, -1]
   }
 
-  def part1(input)
+  private def parse(input)
     walls = [] of Array(Bool)
     start_x = 0
     start_y = 0
@@ -31,14 +31,29 @@ class Day16 < Day
       end
     end
 
-    queue = Priority::Queue(
-      Array(Tuple(Int32, Int32, Char))
-    ).new
+    {walls, start_x, start_y, dest_x, dest_y}
+  end
+
+  private def turns(dir)
+    if dir == '^'
+      {'<', '>'}
+    elsif dir == '>'
+      {'^', 'v'}
+    elsif dir == 'v'
+      {'>', '<'}
+    else
+      {'v', '^'}
+    end
+  end
+
+  # State represents an x y coordinate and facing direction
+  alias State = Tuple(Int32, Int32, Char)
+
+  def part1(input)
+    walls, start_x, start_y, dest_x, dest_y = parse(input)
+    queue = Priority::Queue(Array(State)).new
     queue.push 0, [{start_x, start_y, '>'}]
-
-    visited = Set(Tuple(Int32, Int32, Char)).new
-
-    i = 0
+    visited = Set(State).new
 
     loop do
       item = queue.shift
@@ -46,47 +61,25 @@ class Day16 < Day
       if visited.includes?(item.value.last)
         next
       else
-        # puts "We have visited this already, skip"
         visited << item.value.last
       end
 
       path = item.value
       x, y, dir = path.last
 
-      i += 1
-      # if item.priority > 11048 || i > 200_000
-      #   puts "Too many tries"
-      #   pp item
-      #   exit
-      # end
-
-      # puts "At #{x} #{y} facing #{dir}, priority #{item.priority}"
-
       if x == dest_x && y == dest_y
+        # print_part1(walls, path)
         return item.priority
       end
 
-      # check moving straight
       mx, my = MOVES[dir]
       if !walls[y + my][x + mx] && !path.any? { |px, py, _d| px == x + mx && py == y + my}
-        path = path.clone
-        path << {x + mx, y + my, dir}
-        queue.push item.priority + 1, path
+        spath = path.clone
+        spath << {x + mx, y + my, dir}
+        queue.push item.priority + 1, spath
       end
 
-      if dir == '^'
-        left = '<'
-        right = '>'
-      elsif dir == '>'
-        left = '^'
-        right = 'v'
-      elsif dir == 'v'
-        left = '>'
-        right = '<'
-      else
-        left = 'v'
-        right = '^'
-      end
+      left, right = turns(dir)
 
       if !path.includes?({x, y, left})
         lpath = path.clone
@@ -105,6 +98,126 @@ class Day16 < Day
   end
 
   def part2(input)
+    walls, start_x, start_y, dest_x, dest_y = parse(input)
+
+    paths = [] of Array(State)
+
+    previous_states = Hash(State, Set(State)).new do |hash, key|
+      hash[key] = Set(State).new
+    end
+
+    costs = Hash(State, Int32).new do |hash, key|
+      hash[key] = 999_999_999
+    end
+
+    queue = Priority::Queue(State).new
+    queue.push 0, {start_x, start_y, '>'}
+
+    final_state : State | Nil = nil
+
+    loop do
+      break if queue.empty?
+
+      item = queue.shift
+      x, y, dir = item.value
+
+      if x == dest_x && y == dest_y
+        final_state = item.value
+        break
+      end
+
+      mx, my = MOVES[dir]
+      if !walls[y + my][x + mx]
+        new_state = {x + mx, y + my, dir}
+        prev_cost = costs[new_state]
+        next_cost = item.priority + 1
+
+        if next_cost < prev_cost
+          costs[new_state] = next_cost.as(Int32)
+          queue.push next_cost, new_state
+          previous_states[new_state] = Set{item.value}
+        elsif next_cost == prev_cost
+          previous_states[new_state] << item.value
+        end
+      end
+
+      left, right = turns(dir)
+
+      new_state = {x, y, left}
+      prev_cost = costs[new_state]
+      next_cost = item.priority + 1000
+
+      if next_cost < prev_cost
+        costs[new_state] = next_cost.as(Int32)
+        queue.push next_cost, new_state
+        previous_states[new_state] = Set{item.value}
+      elsif next_cost == prev_cost
+        previous_states[new_state] << item.value
+      end
+
+      new_state = {x, y, right}
+      prev_cost = costs[new_state]
+      next_cost = item.priority + 1000
+
+      if next_cost < prev_cost
+        costs[new_state] = next_cost.as(Int32)
+        queue.push next_cost, new_state
+        previous_states[new_state] = Set{item.value}
+      elsif next_cost == prev_cost
+        previous_states[new_state] << item.value
+      end
+    end
+
+    if final_state
+      all_states = find_all_states(final_state, start_x, start_y, previous_states)
+      points = all_states.map { |x, y, _| {x, y} }.uniq
+      # print_part2(walls, points)
+      return points.size
+    end
+
     0
+  end
+
+  private def find_all_states(state : State, start_x, start_y, prev_states) : Array(State)
+    if state[0] == start_x && state[1] == start_y
+      [state]
+    else
+      [state] + prev_states[state].map do |s|
+        find_all_states(s, start_x, start_y, prev_states)
+      end.flatten
+    end
+  end
+
+  private def print_part1(walls, path)
+    walls.each_with_index do |line, y|
+      str = line.map_with_index do |is_wall, x|
+        if is_wall
+          '#'
+        else
+          point = path.find { |point| point[0] == x && point[1] == y }
+          if point
+            point[2]
+          else
+            '.'
+          end
+        end
+      end.join
+      puts str
+    end
+  end
+
+  private def print_part2(walls, points)
+    walls.each_with_index do |line, y|
+      str = line.map_with_index do |is_wall, x|
+        if is_wall
+          '#'
+        elsif points.includes?({x, y})
+          'O'
+        else
+          '.'
+        end
+      end.join
+      puts str
+    end
   end
 end

@@ -11,14 +11,20 @@ describe Day16 do
 
     it "works with larger sample" do
       day.part1(
-        input = Input.from_example("16_b.txt")
+        Input.from_example("16_b.txt")
       ).should eq(11048)
     end
   end
 
   describe "part2" do
     it "works" do
-      day.part2(input).should eq(0)
+      day.part2(input).should eq(45)
+    end
+
+    it "works with larger sample" do
+      day.part2(
+        Input.from_example("16_b.txt")
+      ).should eq(64)
     end
   end
 
