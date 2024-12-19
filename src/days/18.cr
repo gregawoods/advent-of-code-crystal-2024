@@ -12,12 +12,14 @@ class Day18 < Day
     @bytes_to_read = 1024
   end
 
-  def part1(input)
-    bytes = input.lines.first(@bytes_to_read).map do |line|
+  private def bytes(input)
+    input.lines.map do |line|
       x, y = line.split(",").map(&.to_i)
       {x, y}
     end
+  end
 
+  private def find_shortest_distance(bytes) : Int32?
     queue = Priority::Queue(Path).new
     queue.push 0, [{0, 0}]
     visited = Set(Point).new
@@ -33,20 +35,18 @@ class Day18 < Day
 
       move(item.value, bytes).each do |new_path|
         if new_path.last == {@width, @height}
-          print(item.value, bytes)
-          return item.priority + 1
+          # print(item.value, bytes)
+          return (item.priority + 1).as(Int32)
         end
 
         queue.push item.priority + 1, new_path
       end
 
       if queue.empty?
-        puts "Ran out of paths!"
-        exit
+        # puts "Ran out of paths!"
+        return nil
       end
     end
-
-    0
   end
 
   DIRECTIONS = [
@@ -91,7 +91,35 @@ class Day18 < Day
     end
   end
 
+  def part1(input)
+    find_shortest_distance(
+      bytes(input).first(@bytes_to_read)
+    ) || 0
+  end
+
   def part2(input)
+    bytes = bytes(input)
+    index = @bytes_to_read
+
+    range_start = @bytes_to_read
+    range_end = bytes.size
+
+    loop do
+      offset = ((range_end - range_start) / 2).to_i
+      position = range_start + offset
+      result = find_shortest_distance(bytes.first(position))
+
+      if offset == 0
+        return bytes[position].join(",")
+      end
+
+      if result
+        range_start = range_start + offset
+      else
+        range_end = range_end - offset
+      end
+    end
+
     0
   end
 end
