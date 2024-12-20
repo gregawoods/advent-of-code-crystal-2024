@@ -12,7 +12,7 @@ describe Day19 do
 
   describe "part2" do
     it "works" do
-      day.part2(input).should eq(0)
+      day.part2(input).should eq(16)
     end
   end
 
