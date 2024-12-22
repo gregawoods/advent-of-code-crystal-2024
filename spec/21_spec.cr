@@ -5,11 +5,6 @@ describe Day21 do
   input = Input.from_example("21.txt")
 
   describe "part1" do
-    # it "calculates one button press" do
-    #   day.keypad_robot_press('0')
-    #   puts "Sequence: #{day.sequence.join}"
-    # end
-
     it "calculates a sequence" do
       day.calculate_total_moves("029A").should eq("<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A".size)
       day.calculate_total_moves("980A").should eq("<v<A>>^AAAvA^A<vA<AA>>^AvAA<^A>A<v<A>A>^AAAvA<^A>A<vA>^A<A>A".size)
@@ -19,6 +14,7 @@ describe Day21 do
     end
 
     it "works" do
+      day.reset_state
       day.part1(input).should eq(126384)
     end
   end

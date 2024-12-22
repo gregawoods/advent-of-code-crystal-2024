@@ -44,7 +44,7 @@ class Day21 < Day
   }
 
   def keypad_robot_press(dest : Char) : Int32
-    moves = 0
+    # moves = 0
     dest_point = DOOR_BUTTON_POSITIONS[dest]
 
     dx = dest_point[0] - @numeric_keypad_robot_position[0]
@@ -55,18 +55,11 @@ class Day21 < Day
     # puts "Total move x #{dx} and y #{dy}"
     # puts ""
 
-    if @numeric_keypad_robot_position[1] == 3
-      # if we are currently in the bottom row, we need to move Y first
-      dir = dy.positive? ? 'v' : '^'
-      dy.abs.times do
-        moves += inner_robot_press(dir)
-      end
-      dir = dx.positive? ? '>' : '<'
-      dx.abs.times do
-        moves += inner_robot_press(dir)
-      end
-    else
-      # else, we should move X first
+    sequences = [] of Int32
+
+    # check to see if we can move horizontally first
+    if DOOR_BUTTON_POSITIONS['x'] != { @numeric_keypad_robot_position[0] + dx, @numeric_keypad_robot_position[1] }
+      moves = 0
       dir = dx.positive? ? '>' : '<'
       dx.abs.times do
         moves += inner_robot_press(dir)
@@ -75,39 +68,41 @@ class Day21 < Day
       dy.abs.times do
         moves += inner_robot_press(dir)
       end
+      moves += inner_robot_press('A')
+      sequences << moves
     end
 
-    moves += inner_robot_press('A')
+    # check to see if we can move vertically first
+    if DOOR_BUTTON_POSITIONS['x'] != { @numeric_keypad_robot_position[0], @numeric_keypad_robot_position[1] + dy }
+      moves = 0
+      dir = dy.positive? ? 'v' : '^'
+      dy.abs.times do
+        moves += inner_robot_press(dir)
+      end
+      dir = dx.positive? ? '>' : '<'
+      dx.abs.times do
+        moves += inner_robot_press(dir)
+      end
+      moves += inner_robot_press('A')
+      sequences << moves
+    end
 
     @numeric_keypad_robot_position = dest_point
-
-    moves
+    sequences.min
   end
 
   def inner_robot_press(dest : Char) : Int32
-    moves = 0
+    # moves = 0
     dest_point = CONTROL_BUTTON_POSITIONS[dest]
 
     dx = dest_point[0] - @dir_robot_1_position[0]
     dy = dest_point[1] - @dir_robot_1_position[1]
 
-    # puts "# inner robot needs to press #{dest}"
-    # puts "Need to move inner robot position from #{@dir_robot_1_position} to #{dest_point}"
-    # puts "Total move x #{dx} and y #{dy}"
-    # puts ""
+    sequences = [] of Int32
 
-    if @dir_robot_1_position[1] == 0
-      # if we are currently in the top row, move the Y axies first
-      dir = dy.positive? ? 'v' : '^'
-      dy.abs.times do
-        moves += outer_robot_press(dir)
-      end
-      dir = dx.positive? ? '>' : '<'
-      dx.abs.times do
-        moves += outer_robot_press(dir)
-      end
-    else
-      # otherwise, move the X axis first
+    # check to see if we can move horizontally first
+    if CONTROL_BUTTON_POSITIONS['x'] != { @dir_robot_1_position[0] + dx, @dir_robot_1_position[1] }
+      moves = 0
       dir = dx.positive? ? '>' : '<'
       dx.abs.times do
         moves += outer_robot_press(dir)
@@ -116,12 +111,28 @@ class Day21 < Day
       dy.abs.times do
         moves += outer_robot_press(dir)
       end
+      moves += outer_robot_press('A')
+      sequences << moves
     end
 
-    moves += outer_robot_press('A')
-    @dir_robot_1_position = dest_point
+    # check to see if we can move vertically first
+    if CONTROL_BUTTON_POSITIONS['x'] != { @dir_robot_1_position[0], @dir_robot_1_position[1] + dy }
+      moves = 0
+      dir = dy.positive? ? 'v' : '^'
+      dy.abs.times do
+        moves += outer_robot_press(dir)
+      end
+      dir = dx.positive? ? '>' : '<'
+      dx.abs.times do
+        moves += outer_robot_press(dir)
+      end
+      moves += outer_robot_press('A')
+      sequences << moves
+    end
 
-    moves
+    # return the min of the two options
+    @dir_robot_1_position = dest_point
+    sequences.min
   end
 
   def outer_robot_press(dest : Char) : Int32
@@ -131,36 +142,30 @@ class Day21 < Day
     dx = dest_point[0] - @dir_robot_2_position[0]
     dy = dest_point[1] - @dir_robot_2_position[1]
 
-    # puts "Outer robot needs to press #{dest}"
-    # puts "Need to move outer robot position from #{@dir_robot_2_position} to #{dest_point}"
-    # puts "Total move x #{dx} and y #{dy}"
-    # puts ""
     @dir_robot_2_position = dest_point
 
-    if dx.positive?
-      dx.times do
-        # puts "Keypad >"
-        @sequence << '>'
-        moves += 1
-      end
-    elsif dx.negative?
-      dx.abs.times do
-        # puts "Keypad <"
-        @sequence << '<'
-        moves += 1
-      end
-    end
-
-    if dy.positive?
-      dy.times do
-        # puts "Keypad v"
-        @sequence << 'v'
-        moves += 1
-      end
-    elsif dy.negative?
+    if @dir_robot_2_position[1] == 0
+      # if we are currently in the top row, move the Y axies first
+      dir = dy.positive? ? 'v' : '^'
+      @sequence << dir
       dy.abs.times do
-        # puts "Keypad ^"
-        @sequence << '^'
+        moves += 1
+      end
+      dir = dx.positive? ? '>' : '<'
+      @sequence << dir
+      dx.abs.times do
+        moves += 1
+      end
+    else
+      # otherwise, move the X axis first
+      dir = dx.positive? ? '>' : '<'
+      @sequence << dir
+      dx.abs.times do
+        moves += 1
+      end
+      dir = dy.positive? ? 'v' : '^'
+      @sequence << dir
+      dy.abs.times do
         moves += 1
       end
     end
@@ -169,17 +174,18 @@ class Day21 < Day
     @sequence << 'A'
     moves += 1
 
-    puts ""
-
     moves
   end
 
+  def reset_state
+    @numeric_keypad_robot_position = {2, 3}
+    @dir_robot_1_position = {2, 0}
+    @dir_robot_2_position = {2, 0}
+  end
+
   def calculate_total_moves(sequence : String) : Int32
-    # reset state
     @sequence.clear
-    # @numeric_keypad_robot_position = {2, 3}
-    # @dir_robot_1_position = {2, 0}
-    # @dir_robot_2_position = {2, 0}
+    reset_state
 
     sequence.chars.sum do |char|
       keypad_robot_press(char)
@@ -188,10 +194,7 @@ class Day21 < Day
 
   def part1(input)
     input.lines.sum do |line|
-      moves = calculate_total_moves(line)
-      intval = line[0..2].to_i
-      puts "Intval of #{line} is #{intval}"
-      moves * intval
+      line[0..2].to_i * calculate_total_moves(line)
     end
   end
 
