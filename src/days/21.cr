@@ -9,14 +9,10 @@ class Day21 < Day
     #
     @numeric_keypad_robot_position = {2, 3}
 
-    # This is the inner-most robot, which controls the door panel
-    @dir_robot_1_position = {2, 0}
+    # This tracks the posiotiosn of directional robots
+    @directional_robot_positions = Array(Point).new
 
-    # This is the first robot, which sends signals to the inner-most robot
-    @dir_robot_2_position = {2, 0}
-
-    # keep track of the sequence
-    @sequence = [] of Char
+    @cache = Hash(String, Int32).new
   end
 
   DOOR_BUTTON_POSITIONS = {
@@ -43,17 +39,10 @@ class Day21 < Day
     '>' => {2, 1}
   }
 
-  def keypad_robot_press(dest : Char) : Int32
-    # moves = 0
+  def keypad_robot_press(dest : Char, max_depth : Int32) : Int32
     dest_point = DOOR_BUTTON_POSITIONS[dest]
-
     dx = dest_point[0] - @numeric_keypad_robot_position[0]
     dy = dest_point[1] - @numeric_keypad_robot_position[1]
-
-    # puts "# Keypad robot needs to press #{dest}"
-    # puts "Need to move keypad robot position from #{@numeric_keypad_robot_position} to #{dest_point}"
-    # puts "Total move x #{dx} and y #{dy}"
-    # puts ""
 
     sequences = [] of Int32
 
@@ -62,13 +51,13 @@ class Day21 < Day
       moves = 0
       dir = dx.positive? ? '>' : '<'
       dx.abs.times do
-        moves += inner_robot_press(dir)
+        moves += inner_robot_press(dir, 0, max_depth)
       end
       dir = dy.positive? ? 'v' : '^'
       dy.abs.times do
-        moves += inner_robot_press(dir)
+        moves += inner_robot_press(dir, 0, max_depth)
       end
-      moves += inner_robot_press('A')
+      moves += inner_robot_press('A', 0, max_depth)
       sequences << moves
     end
 
@@ -77,13 +66,13 @@ class Day21 < Day
       moves = 0
       dir = dy.positive? ? 'v' : '^'
       dy.abs.times do
-        moves += inner_robot_press(dir)
+        moves += inner_robot_press(dir, 0, max_depth)
       end
       dir = dx.positive? ? '>' : '<'
       dx.abs.times do
-        moves += inner_robot_press(dir)
+        moves += inner_robot_press(dir, 0, max_depth)
       end
-      moves += inner_robot_press('A')
+      moves += inner_robot_press('A', 0, max_depth)
       sequences << moves
     end
 
@@ -91,114 +80,87 @@ class Day21 < Day
     sequences.min
   end
 
-  def inner_robot_press(dest : Char) : Int32
-    # moves = 0
-    dest_point = CONTROL_BUTTON_POSITIONS[dest]
+  def inner_robot_press(dest : Char, depth : Int32, max_depth : Int32) : Int32
+    # if @directional_robot_positions.size < depth + 1
+    #   @directional_robot_positions << {2, 0}
+    # end
 
-    dx = dest_point[0] - @dir_robot_1_position[0]
-    dy = dest_point[1] - @dir_robot_1_position[1]
+    dest_point = CONTROL_BUTTON_POSITIONS[dest]
+    dx = dest_point[0] - @directional_robot_positions[depth][0]
+    dy = dest_point[1] - @directional_robot_positions[depth][1]
+
+    cache_key = (@directional_robot_positions.first(depth + 1) + [depth, dest]).join("-")
+    # cache_key = [@directional_robot_positions[depth][0], depth, dest].join("-")
+
+    if @cache.has_key?(cache_key)
+      # puts "Cache hit!"
+      @directional_robot_positions[depth] = dest_point
+      return @cache[cache_key]
+    end
 
     sequences = [] of Int32
 
-    # check to see if we can move horizontally first
-    if CONTROL_BUTTON_POSITIONS['x'] != { @dir_robot_1_position[0] + dx, @dir_robot_1_position[1] }
-      moves = 0
-      dir = dx.positive? ? '>' : '<'
-      dx.abs.times do
-        moves += outer_robot_press(dir)
+    if depth == max_depth
+      sequences << dx.abs + dy.abs + 1
+    else
+      # check to see if we can move horizontally first
+      if CONTROL_BUTTON_POSITIONS['x'] != { @directional_robot_positions[depth][0] + dx, @directional_robot_positions[depth][1] }
+        moves = 0
+        dir = dx.positive? ? '>' : '<'
+        dx.abs.times do
+          moves += inner_robot_press(dir, depth + 1, max_depth)
+        end
+        dir = dy.positive? ? 'v' : '^'
+        dy.abs.times do
+          moves += inner_robot_press(dir, depth + 1, max_depth)
+        end
+        moves += inner_robot_press('A', depth + 1, max_depth)
+        sequences << moves
       end
-      dir = dy.positive? ? 'v' : '^'
-      dy.abs.times do
-        moves += outer_robot_press(dir)
-      end
-      moves += outer_robot_press('A')
-      sequences << moves
-    end
 
-    # check to see if we can move vertically first
-    if CONTROL_BUTTON_POSITIONS['x'] != { @dir_robot_1_position[0], @dir_robot_1_position[1] + dy }
-      moves = 0
-      dir = dy.positive? ? 'v' : '^'
-      dy.abs.times do
-        moves += outer_robot_press(dir)
+      # check to see if we can move vertically first
+      if CONTROL_BUTTON_POSITIONS['x'] != { @directional_robot_positions[depth][0], @directional_robot_positions[depth][1] + dy }
+        moves = 0
+        dir = dy.positive? ? 'v' : '^'
+        dy.abs.times do
+          moves += inner_robot_press(dir, depth + 1, max_depth)
+        end
+        dir = dx.positive? ? '>' : '<'
+        dx.abs.times do
+          moves += inner_robot_press(dir, depth + 1, max_depth)
+        end
+        moves += inner_robot_press('A', depth + 1, max_depth)
+        sequences << moves
       end
-      dir = dx.positive? ? '>' : '<'
-      dx.abs.times do
-        moves += outer_robot_press(dir)
-      end
-      moves += outer_robot_press('A')
-      sequences << moves
     end
 
     # return the min of the two options
-    @dir_robot_1_position = dest_point
-    sequences.min
+    @directional_robot_positions[depth] = dest_point
+    @cache[cache_key] = sequences.min
+    @cache[cache_key]
   end
 
-  def outer_robot_press(dest : Char) : Int32
-    moves = 0
-    dest_point = CONTROL_BUTTON_POSITIONS[dest]
-
-    dx = dest_point[0] - @dir_robot_2_position[0]
-    dy = dest_point[1] - @dir_robot_2_position[1]
-
-    @dir_robot_2_position = dest_point
-
-    if @dir_robot_2_position[1] == 0
-      # if we are currently in the top row, move the Y axies first
-      dir = dy.positive? ? 'v' : '^'
-      @sequence << dir
-      dy.abs.times do
-        moves += 1
-      end
-      dir = dx.positive? ? '>' : '<'
-      @sequence << dir
-      dx.abs.times do
-        moves += 1
-      end
-    else
-      # otherwise, move the X axis first
-      dir = dx.positive? ? '>' : '<'
-      @sequence << dir
-      dx.abs.times do
-        moves += 1
-      end
-      dir = dy.positive? ? 'v' : '^'
-      @sequence << dir
-      dy.abs.times do
-        moves += 1
-      end
+  def calculate_total_moves(sequence : String, max_depth : Int32) : Int32
+    @directional_robot_positions = (0..max_depth).map do
+      {2, 0}
     end
 
-    # puts "Keypad A"
-    @sequence << 'A'
-    moves += 1
-
-    moves
-  end
-
-  def reset_state
-    @numeric_keypad_robot_position = {2, 3}
-    @dir_robot_1_position = {2, 0}
-    @dir_robot_2_position = {2, 0}
-  end
-
-  def calculate_total_moves(sequence : String) : Int32
-    @sequence.clear
-    reset_state
-
     sequence.chars.sum do |char|
-      keypad_robot_press(char)
+      print char
+      keypad_robot_press(char, max_depth)
     end
   end
 
   def part1(input)
     input.lines.sum do |line|
-      line[0..2].to_i * calculate_total_moves(line)
+      line[0..2].to_i * calculate_total_moves(line, 1)
     end
   end
 
   def part2(input)
-    0
+    input.lines.sum do |line|
+      puts "\n\nLine #{line}"
+      line[0..2].to_i * calculate_total_moves(line, 24)
+    end
   end
 end
